@@ -158,7 +158,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 /* ============================================================
-   4. THREE.JS 3D FLOATING HEARTS (WITH CANVAS 2D FAILSAFE FALLBACK)
+   4. THREE.JS 3D FLOATING HEARTS & LOVE EMOJIS (TOP NOTCH GLOWING MAGIC)
    ============================================================ */
 function initHeartFieldCanvas2D(canvas) {
   try {
@@ -177,14 +177,16 @@ function initHeartFieldCanvas2D(canvas) {
       canvas.height = H;
     });
 
-    const icons = ['💜', '💖', '🌸', '✨', '💕', '🤍', '🧁'];
-    const items = Array.from({ length: 65 }, () => ({
+    const icons = ['💜', '💖', '🌸', '✨', '💕', '🥰', '🥺', '💗', '💌', '🌷', '🎂', '🌟', '🧁', '🧸'];
+    const items = Array.from({ length: 70 }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      vy: 0.45 + Math.random() * 0.85,
+      vy: 0.55 + Math.random() * 0.95,
       vx: (Math.random() - 0.5) * 0.4,
-      size: 16 + Math.random() * 22,
-      alpha: 0.35 + Math.random() * 0.45,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 0.015 + Math.random() * 0.025,
+      size: 18 + Math.random() * 26,
+      alpha: 0.45 + Math.random() * 0.45,
       icon: icons[Math.floor(Math.random() * icons.length)],
     }));
 
@@ -192,14 +194,22 @@ function initHeartFieldCanvas2D(canvas) {
       ctx.clearRect(0, 0, W, H);
       items.forEach((it) => {
         it.y -= it.vy;
-        it.x += it.vx;
-        if (it.y < -30) {
-          it.y = H + 30;
+        it.wobble += it.wobbleSpeed;
+        it.x += Math.sin(it.wobble) * 0.55 + it.vx;
+        if (it.y < -40) {
+          it.y = H + 40;
           it.x = Math.random() * W;
         }
+        if (it.x < -40) it.x = W + 40;
+        if (it.x > W + 40) it.x = -40;
+
         ctx.save();
         ctx.globalAlpha = it.alpha;
-        ctx.font = `${it.size}px sans-serif`;
+        ctx.shadowColor = 'rgba(244, 114, 182, 0.75)';
+        ctx.shadowBlur = 14;
+        ctx.font = `${it.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(it.icon, it.x, it.y);
         ctx.restore();
       });
@@ -228,29 +238,77 @@ function initHeartFieldCanvas2D(canvas) {
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.z = 18;
 
-    function makeHeartTexture(color) {
+    // 1. High-definition emoji textures with luminous dropshadow glow
+    function makeEmojiTexture(emoji, glow) {
       const c = document.createElement('canvas');
       c.width = 128;
       c.height = 128;
       const ctx = c.getContext('2d');
-      ctx.translate(64, 20);
+      ctx.font = '68px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.shadowColor = glow || 'rgba(244, 114, 182, 0.9)';
+      ctx.shadowBlur = 18;
+      ctx.fillText(emoji, 64, 64);
+      return new THREE.CanvasTexture(c);
+    }
+
+    // 2. High-definition 3D gradient glowing hearts
+    function makeGlowingHeartTexture(c1, c2, glow) {
+      const c = document.createElement('canvas');
+      c.width = 128;
+      c.height = 128;
+      const ctx = c.getContext('2d');
+      ctx.translate(64, 22);
+      ctx.shadowColor = glow || 'rgba(236, 72, 153, 0.8)';
+      ctx.shadowBlur = 20;
       ctx.beginPath();
-      const topCurveHeight = 40;
+      const topCurveHeight = 36;
       ctx.moveTo(0, topCurveHeight);
-      ctx.bezierCurveTo(0, topCurveHeight - 40, -64, topCurveHeight - 40, -64, topCurveHeight);
-      ctx.bezierCurveTo(-64, topCurveHeight + 30, -20, topCurveHeight + 66, 0, topCurveHeight + 96);
-      ctx.bezierCurveTo(20, topCurveHeight + 66, 64, topCurveHeight + 30, 64, topCurveHeight);
-      ctx.bezierCurveTo(64, topCurveHeight - 40, 0, topCurveHeight - 40, 0, topCurveHeight);
+      ctx.bezierCurveTo(0, topCurveHeight - 38, -58, topCurveHeight - 38, -58, topCurveHeight);
+      ctx.bezierCurveTo(-58, topCurveHeight + 28, -18, topCurveHeight + 62, 0, topCurveHeight + 90);
+      ctx.bezierCurveTo(18, topCurveHeight + 62, 58, topCurveHeight + 28, 58, topCurveHeight);
+      ctx.bezierCurveTo(58, topCurveHeight - 38, 0, topCurveHeight - 38, 0, topCurveHeight);
       ctx.closePath();
-      ctx.fillStyle = color;
+      const grad = ctx.createLinearGradient(-35, 0, 35, 90);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.35, c1);
+      grad.addColorStop(1, c2);
+      ctx.fillStyle = grad;
       ctx.fill();
       return new THREE.CanvasTexture(c);
     }
 
-    const palette = ['#c084fc', '#f472b6', '#a855f7', '#ffffff', '#fbcfe8', '#e9d5ff', '#ec4899'];
-    const textures = palette.map(makeHeartTexture);
+    const emojiDefs = [
+      { char: '💜', glow: 'rgba(192, 132, 252, 0.95)' },
+      { char: '💖', glow: 'rgba(244, 114, 182, 0.95)' },
+      { char: '💕', glow: 'rgba(236, 72, 153, 0.95)' },
+      { char: '🌸', glow: 'rgba(251, 207, 232, 0.95)' },
+      { char: '✨', glow: 'rgba(254, 240, 138, 0.95)' },
+      { char: '🥰', glow: 'rgba(244, 114, 182, 0.95)' },
+      { char: '🥺', glow: 'rgba(216, 180, 254, 0.95)' },
+      { char: '💗', glow: 'rgba(244, 114, 182, 0.95)' },
+      { char: '💌', glow: 'rgba(236, 72, 153, 0.95)' },
+      { char: '🌷', glow: 'rgba(251, 113, 133, 0.95)' },
+      { char: '🎂', glow: 'rgba(244, 114, 182, 0.95)' },
+      { char: '🌟', glow: 'rgba(253, 224, 71, 0.95)' },
+      { char: '🧁', glow: 'rgba(244, 114, 182, 0.95)' },
+      { char: '🧸', glow: 'rgba(216, 180, 254, 0.95)' },
+    ];
 
-    const COUNT = window.innerWidth < 700 ? 55 : 100;
+    const heartDefs = [
+      { c1: '#f472b6', c2: '#a855f7', glow: 'rgba(244, 114, 182, 0.85)' },
+      { c1: '#ec4899', c2: '#7c3aed', glow: 'rgba(236, 72, 153, 0.85)' },
+      { c1: '#ffffff', c2: '#f472b6', glow: 'rgba(255, 255, 255, 0.9)' },
+      { c1: '#e879f9', c2: '#c084fc', glow: 'rgba(192, 132, 252, 0.85)' },
+    ];
+
+    const textures = [
+      ...emojiDefs.map((d) => makeEmojiTexture(d.char, d.glow)),
+      ...heartDefs.map((d) => makeGlowingHeartTexture(d.c1, d.c2, d.glow)),
+    ];
+
+    const COUNT = window.innerWidth < 700 ? 50 : 85;
     const group = new THREE.Group();
     const hearts = [];
 
@@ -259,20 +317,22 @@ function initHeartFieldCanvas2D(canvas) {
       const mat = new THREE.SpriteMaterial({
         map: tex,
         transparent: true,
-        opacity: 0.42 + Math.random() * 0.42,
+        opacity: 0.5 + Math.random() * 0.42,
         depthWrite: false,
       });
       const sprite = new THREE.Sprite(mat);
-      const scale = 0.45 + Math.random() * 1.25;
+      const scale = 0.65 + Math.random() * 1.35;
       sprite.scale.set(scale, scale, 1);
       sprite.position.set(
         (Math.random() - 0.5) * 36,
-        (Math.random() - 0.5) * 24,
+        (Math.random() - 0.5) * 26,
         (Math.random() - 0.5) * 18
       );
       sprite.userData = {
-        speed: 0.12 + Math.random() * 0.38,
+        speed: 0.16 + Math.random() * 0.38,
         drift: (Math.random() - 0.5) * 0.35,
+        wobblePhase: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.8 + Math.random() * 0.6,
         rotSpeed: (Math.random() - 0.5) * 0.015,
       };
       group.add(sprite);
@@ -286,24 +346,26 @@ function initHeartFieldCanvas2D(canvas) {
       mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     });
 
+    let animTime = 0;
     function animate() {
       requestAnimationFrame(animate);
+      animTime += 0.015;
       hearts.forEach((h) => {
-        h.position.y += h.userData.speed * 0.018;
-        h.position.x += h.userData.drift * 0.018;
+        h.position.y += h.userData.speed * 0.022;
+        h.position.x += Math.sin(animTime * h.userData.wobbleSpeed + h.userData.wobblePhase) * 0.014 + h.userData.drift * 0.01;
         if (h.material && typeof h.material.rotation === 'number') {
           h.material.rotation += h.userData.rotSpeed;
         }
-        if (h.position.y > 14) {
-          h.position.y = -14;
+        if (h.position.y > 15) {
+          h.position.y = -15;
           h.position.x = (Math.random() - 0.5) * 36;
         }
-        if (h.position.x > 19) h.position.x = -19;
-        if (h.position.x < -19) h.position.x = 19;
+        if (h.position.x > 20) h.position.x = -20;
+        if (h.position.x < -20) h.position.x = 20;
       });
 
-      group.rotation.y += (mouseX * 0.15 - group.rotation.y) * 0.02;
-      group.rotation.x += (-mouseY * 0.08 - group.rotation.x) * 0.02;
+      group.rotation.y += (mouseX * 0.12 - group.rotation.y) * 0.02;
+      group.rotation.x += (-mouseY * 0.06 - group.rotation.x) * 0.02;
       renderer.render(scene, camera);
     }
     animate();
@@ -511,10 +573,13 @@ function goToStage(index, durationMs = 5000) {
   // Dim background Three.js hearts specifically in Stage 3 so the blossom tree has crystal clarity
   document.body.classList.toggle('stage-3-active', index === 3);
 
-  // Cinematic exit on outgoing stage
+  // Soft fade out on outgoing stage's inner card
   const outgoing = stages[prevIndex];
   if (outgoing && typeof gsap !== 'undefined') {
-    gsap.to(outgoing, { scale: 0.94, opacity: 0.2, duration: 0.45, ease: 'power2.inOut' });
+    const innerOut = outgoing.querySelector('.stage-inner');
+    if (innerOut) {
+      gsap.to(innerOut, { scale: 0.95, opacity: 0, duration: 0.35, ease: 'power2.in' });
+    }
   }
 
   showTransitionVeil(
@@ -523,18 +588,33 @@ function goToStage(index, durationMs = 5000) {
     durationMs,
     () => {
       stages.forEach((st, i) => {
-        st.classList.toggle('active-stage', i === index);
-      });
+        if (typeof gsap !== 'undefined') {
+          gsap.killTweensOf(st);
+          const inn = st.querySelector('.stage-inner');
+          if (inn) gsap.killTweensOf(inn);
+        }
+        // CRITICAL: Strip any leftover inline styles so inactive stages can never bleed through!
+        st.removeAttribute('style');
 
-      // Cinematic entrance on incoming stage
-      const incoming = stages[index];
-      if (incoming && typeof gsap !== 'undefined') {
-        gsap.fromTo(
-          incoming,
-          { scale: 1.05, opacity: 0 },
-          { scale: 1, opacity: 1, duration: 0.65, ease: 'power2.out' }
-        );
-      }
+        if (i === index) {
+          st.classList.add('active-stage');
+          const innerIn = st.querySelector('.stage-inner');
+          if (innerIn) {
+            innerIn.removeAttribute('style');
+            if (typeof gsap !== 'undefined') {
+              gsap.fromTo(
+                innerIn,
+                { scale: 0.95, opacity: 0, y: 15 },
+                { scale: 1, opacity: 1, y: 0, duration: 0.55, ease: 'power2.out' }
+              );
+            }
+          }
+        } else {
+          st.classList.remove('active-stage');
+          const inn = st.querySelector('.stage-inner');
+          if (inn) inn.removeAttribute('style');
+        }
+      });
 
       // Stage 2: Initial wish card spring pop-up entrance
       if (index === 2) {
