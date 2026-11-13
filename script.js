@@ -114,7 +114,8 @@ document.addEventListener('fullscreenchange', () => {
 let lastCursorX = 0;
 let lastCursorY = 0;
 let lastCursorTime = 0;
-const cursorIcons = ['💜', '💖', '💕', '🌸', '✨', '🤍', '🧁', '🌷', '💝'];
+// Only white, purple, and pink hearts — kept straight and upright
+const cursorIcons = ['🤍', '💜', '💖', '💗', '💓', '💕', '💞'];
 
 function spawnCursorHearts(x, y, count = 2) {
   for (let i = 0; i < count; i++) {
@@ -122,15 +123,13 @@ function spawnCursorHearts(x, y, count = 2) {
     particle.className = 'cursor-heart-particle';
     particle.textContent = cursorIcons[Math.floor(Math.random() * cursorIcons.length)];
 
-    const scatterX = (Math.random() - 0.5) * 28;
-    const scatterY = (Math.random() - 0.5) * 28;
-    const size = 13 + Math.random() * 4.5; // Small, dainty & elegant!
-    const rot = (Math.random() - 0.5) * 55;
+    const scatterX = (Math.random() - 0.5) * 26;
+    const scatterY = (Math.random() - 0.5) * 26;
+    const size = 14 + Math.random() * 4;
 
     particle.style.left = `${x + scatterX}px`;
     particle.style.top = `${y + scatterY}px`;
     particle.style.fontSize = `${size}px`;
-    particle.style.setProperty('--rot', `${rot}deg`);
 
     document.body.appendChild(particle);
 
@@ -158,7 +157,7 @@ window.addEventListener('mousemove', (e) => {
 });
 
 /* ============================================================
-   4. THREE.JS 3D FLOATING HEARTS & LOVE EMOJIS (TOP NOTCH GLOWING MAGIC)
+   4. THREE.JS 3D FLOATING HEARTS (WHITE, PURPLE & PINK HEARTS - STRICTLY STRAIGHT)
    ============================================================ */
 function initHeartFieldCanvas2D(canvas) {
   try {
@@ -177,15 +176,16 @@ function initHeartFieldCanvas2D(canvas) {
       canvas.height = H;
     });
 
-    const icons = ['💜', '💖', '🌸', '✨', '💕', '🥰', '🥺', '💗', '💌', '🌷', '🎂', '🌟', '🧁', '🧸'];
-    const items = Array.from({ length: 70 }, () => ({
+    // ONLY white, purple, and pink heart emojis
+    const icons = ['🤍', '💜', '💖', '💗', '💓', '💕', '💞'];
+    const items = Array.from({ length: 65 }, () => ({
       x: Math.random() * W,
       y: Math.random() * H,
-      vy: 0.55 + Math.random() * 0.95,
-      vx: (Math.random() - 0.5) * 0.4,
+      vy: 0.5 + Math.random() * 0.85,
+      vx: (Math.random() - 0.5) * 0.3,
       wobble: Math.random() * Math.PI * 2,
-      wobbleSpeed: 0.015 + Math.random() * 0.025,
-      size: 18 + Math.random() * 26,
+      wobbleSpeed: 0.015 + Math.random() * 0.02,
+      size: 20 + Math.random() * 24,
       alpha: 0.45 + Math.random() * 0.45,
       icon: icons[Math.floor(Math.random() * icons.length)],
     }));
@@ -195,7 +195,7 @@ function initHeartFieldCanvas2D(canvas) {
       items.forEach((it) => {
         it.y -= it.vy;
         it.wobble += it.wobbleSpeed;
-        it.x += Math.sin(it.wobble) * 0.55 + it.vx;
+        it.x += Math.sin(it.wobble) * 0.45 + it.vx;
         if (it.y < -40) {
           it.y = H + 40;
           it.x = Math.random() * W;
@@ -205,11 +205,12 @@ function initHeartFieldCanvas2D(canvas) {
 
         ctx.save();
         ctx.globalAlpha = it.alpha;
-        ctx.shadowColor = 'rgba(244, 114, 182, 0.75)';
+        ctx.shadowColor = 'rgba(244, 114, 182, 0.8)';
         ctx.shadowBlur = 14;
         ctx.font = `${it.size}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
+        // Rendered straight and upright — NO rotation
         ctx.fillText(it.icon, it.x, it.y);
         ctx.restore();
       });
@@ -238,13 +239,13 @@ function initHeartFieldCanvas2D(canvas) {
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
     camera.position.z = 18;
 
-    // 1. High-definition emoji textures with luminous dropshadow glow
+    // 1. High-definition emoji textures for white, purple & pink hearts (upright & straight)
     function makeEmojiTexture(emoji, glow) {
       const c = document.createElement('canvas');
       c.width = 128;
       c.height = 128;
       const ctx = c.getContext('2d');
-      ctx.font = '68px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+      ctx.font = '72px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.shadowColor = glow || 'rgba(244, 114, 182, 0.9)';
@@ -253,14 +254,14 @@ function initHeartFieldCanvas2D(canvas) {
       return new THREE.CanvasTexture(c);
     }
 
-    // 2. High-definition 3D gradient glowing hearts
+    // 2. High-definition 3D gradient glowing hearts (white, purple, pink)
     function makeGlowingHeartTexture(c1, c2, glow) {
       const c = document.createElement('canvas');
       c.width = 128;
       c.height = 128;
       const ctx = c.getContext('2d');
       ctx.translate(64, 22);
-      ctx.shadowColor = glow || 'rgba(236, 72, 153, 0.8)';
+      ctx.shadowColor = glow || 'rgba(236, 72, 153, 0.85)';
       ctx.shadowBlur = 20;
       ctx.beginPath();
       const topCurveHeight = 36;
@@ -279,28 +280,23 @@ function initHeartFieldCanvas2D(canvas) {
       return new THREE.CanvasTexture(c);
     }
 
+    // STRICTLY heart emojis only: White, Purple, Pink
     const emojiDefs = [
-      { char: '💜', glow: 'rgba(192, 132, 252, 0.95)' },
-      { char: '💖', glow: 'rgba(244, 114, 182, 0.95)' },
-      { char: '💕', glow: 'rgba(236, 72, 153, 0.95)' },
-      { char: '🌸', glow: 'rgba(251, 207, 232, 0.95)' },
-      { char: '✨', glow: 'rgba(254, 240, 138, 0.95)' },
-      { char: '🥰', glow: 'rgba(244, 114, 182, 0.95)' },
-      { char: '🥺', glow: 'rgba(216, 180, 254, 0.95)' },
-      { char: '💗', glow: 'rgba(244, 114, 182, 0.95)' },
-      { char: '💌', glow: 'rgba(236, 72, 153, 0.95)' },
-      { char: '🌷', glow: 'rgba(251, 113, 133, 0.95)' },
-      { char: '🎂', glow: 'rgba(244, 114, 182, 0.95)' },
-      { char: '🌟', glow: 'rgba(253, 224, 71, 0.95)' },
-      { char: '🧁', glow: 'rgba(244, 114, 182, 0.95)' },
-      { char: '🧸', glow: 'rgba(216, 180, 254, 0.95)' },
+      { char: '🤍', glow: 'rgba(255, 255, 255, 0.95)' }, // White Heart
+      { char: '💜', glow: 'rgba(192, 132, 252, 0.95)' }, // Purple Heart
+      { char: '💖', glow: 'rgba(244, 114, 182, 0.95)' }, // Sparkle Pink Heart
+      { char: '💗', glow: 'rgba(244, 114, 182, 0.95)' }, // Growing Pink Heart
+      { char: '💓', glow: 'rgba(244, 114, 182, 0.95)' }, // Beating Pink Heart
+      { char: '💕', glow: 'rgba(236, 72, 153, 0.95)' },  // Two Pink Hearts
+      { char: '💞', glow: 'rgba(236, 72, 153, 0.95)' },  // Revolving Hearts
     ];
 
+    // Glowing 3D hearts in matching white, purple, pink palettes
     const heartDefs = [
-      { c1: '#f472b6', c2: '#a855f7', glow: 'rgba(244, 114, 182, 0.85)' },
-      { c1: '#ec4899', c2: '#7c3aed', glow: 'rgba(236, 72, 153, 0.85)' },
-      { c1: '#ffffff', c2: '#f472b6', glow: 'rgba(255, 255, 255, 0.9)' },
-      { c1: '#e879f9', c2: '#c084fc', glow: 'rgba(192, 132, 252, 0.85)' },
+      { c1: '#ffffff', c2: '#f3e8ff', glow: 'rgba(255, 255, 255, 0.95)' }, // Pure White Glow Heart
+      { c1: '#f472b6', c2: '#a855f7', glow: 'rgba(244, 114, 182, 0.9)' },  // Pink-Purple Gradient Heart
+      { c1: '#ec4899', c2: '#f472b6', glow: 'rgba(236, 72, 153, 0.9)' },  // Radiant Pink Heart
+      { c1: '#c084fc', c2: '#9333ea', glow: 'rgba(192, 132, 252, 0.9)' }, // Royal Purple Heart
     ];
 
     const textures = [
@@ -308,7 +304,7 @@ function initHeartFieldCanvas2D(canvas) {
       ...heartDefs.map((d) => makeGlowingHeartTexture(d.c1, d.c2, d.glow)),
     ];
 
-    const COUNT = window.innerWidth < 700 ? 50 : 85;
+    const COUNT = window.innerWidth < 700 ? 50 : 80;
     const group = new THREE.Group();
     const hearts = [];
 
@@ -319,9 +315,10 @@ function initHeartFieldCanvas2D(canvas) {
         transparent: true,
         opacity: 0.5 + Math.random() * 0.42,
         depthWrite: false,
+        rotation: 0, // STRICTLY straight and upright!
       });
       const sprite = new THREE.Sprite(mat);
-      const scale = 0.65 + Math.random() * 1.35;
+      const scale = 0.75 + Math.random() * 1.25;
       sprite.scale.set(scale, scale, 1);
       sprite.position.set(
         (Math.random() - 0.5) * 36,
@@ -329,11 +326,10 @@ function initHeartFieldCanvas2D(canvas) {
         (Math.random() - 0.5) * 18
       );
       sprite.userData = {
-        speed: 0.16 + Math.random() * 0.38,
-        drift: (Math.random() - 0.5) * 0.35,
+        speed: 0.16 + Math.random() * 0.36,
+        drift: (Math.random() - 0.5) * 0.25,
         wobblePhase: Math.random() * Math.PI * 2,
-        wobbleSpeed: 0.8 + Math.random() * 0.6,
-        rotSpeed: (Math.random() - 0.5) * 0.015,
+        wobbleSpeed: 0.7 + Math.random() * 0.5,
       };
       group.add(sprite);
       hearts.push(sprite);
@@ -352,10 +348,14 @@ function initHeartFieldCanvas2D(canvas) {
       animTime += 0.015;
       hearts.forEach((h) => {
         h.position.y += h.userData.speed * 0.022;
-        h.position.x += Math.sin(animTime * h.userData.wobbleSpeed + h.userData.wobblePhase) * 0.014 + h.userData.drift * 0.01;
-        if (h.material && typeof h.material.rotation === 'number') {
-          h.material.rotation += h.userData.rotSpeed;
+        // Gentle wave sway, floating smoothly upward
+        h.position.x += Math.sin(animTime * h.userData.wobbleSpeed + h.userData.wobblePhase) * 0.012 + h.userData.drift * 0.006;
+        
+        // Locked upright — NEVER rotated
+        if (h.material) {
+          h.material.rotation = 0;
         }
+
         if (h.position.y > 15) {
           h.position.y = -15;
           h.position.x = (Math.random() - 0.5) * 36;
@@ -1000,7 +1000,7 @@ function spawnCardLoveHeart() {
   const rect = currentDeckCard.getBoundingClientRect();
   const heart = document.createElement('span');
   heart.style.cssText = `position:fixed;left:${rect.left + rect.width / 2}px;top:${rect.top + 30}px;font-size:32px;pointer-events:none;z-index:99999;`;
-  heart.textContent = ['💜', '💖', '🌸', '✨', '💕'][Math.floor(Math.random() * 5)];
+  heart.textContent = ['🤍', '💜', '💖', '💗', '💕'][Math.floor(Math.random() * 5)];
   document.body.appendChild(heart);
 
   if (typeof gsap !== 'undefined') {

@@ -75,14 +75,14 @@ button, a, .clickable, .wish-active-card, .candle-flame-glow, .tag-pill-large, .
 
 @keyframes cursorTrailFloat {
   0% {
-    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
   }
   60% {
     opacity: 0.95;
   }
   100% {
-    transform: translate(calc(-50% + var(--rot, 0deg)), calc(-50% - 75px)) scale(0.35) rotate(var(--rot, 25deg));
+    transform: translate(-50%, calc(-50% - 75px)) scale(0.35);
     opacity: 0;
   }
 }
