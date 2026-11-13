@@ -502,6 +502,7 @@ function showTransitionVeil(title, subtitle, durationMs = 5000, onComplete) {
 
 function goToStage(index, durationMs = 5000) {
   if (index < 0 || index >= stages.length) return;
+  const prevIndex = currentStageIndex;
   currentStageIndex = index;
 
   clearAllPartyPaper(); // Clean screen before switching stage
@@ -509,6 +510,12 @@ function goToStage(index, durationMs = 5000) {
 
   // Dim background Three.js hearts specifically in Stage 3 so the blossom tree has crystal clarity
   document.body.classList.toggle('stage-3-active', index === 3);
+
+  // Cinematic exit on outgoing stage
+  const outgoing = stages[prevIndex];
+  if (outgoing && typeof gsap !== 'undefined') {
+    gsap.to(outgoing, { scale: 0.94, opacity: 0.2, duration: 0.45, ease: 'power2.inOut' });
+  }
 
   showTransitionVeil(
     veilTitle.textContent,
@@ -518,6 +525,16 @@ function goToStage(index, durationMs = 5000) {
       stages.forEach((st, i) => {
         st.classList.toggle('active-stage', i === index);
       });
+
+      // Cinematic entrance on incoming stage
+      const incoming = stages[index];
+      if (incoming && typeof gsap !== 'undefined') {
+        gsap.fromTo(
+          incoming,
+          { scale: 1.05, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.65, ease: 'power2.out' }
+        );
+      }
 
       // Stage 2: Initial wish card spring pop-up entrance
       if (index === 2) {
@@ -967,20 +984,33 @@ function animateWishCardChange(targetIndex, direction = 1) {
   spawnCardLoveHeart();
 
   if (typeof gsap !== 'undefined') {
-    // Current card pops down slightly and fades
+    // Current card rotates and tilts with 3D cinematic depth
     gsap.to(currentDeckCard, {
-      scale: 0.84,
+      rotationY: direction > 0 ? -18 : 18,
+      scale: 0.88,
       opacity: 0,
-      y: direction > 0 ? -16 : 16,
-      duration: 0.16,
+      y: direction > 0 ? -14 : 14,
+      duration: 0.22,
       ease: 'power2.in',
       onComplete: () => {
         renderDeckWish(targetIndex);
-        // Next card springs up into view like a luxury pop-up greeting card!
+        // Next card blooms in with smooth 3D perspective fold & bounce
         gsap.fromTo(
           currentDeckCard,
-          { scale: 0.78, opacity: 0, y: direction > 0 ? 24 : -24 },
-          { scale: 1, opacity: 1, y: 0, duration: 0.38, ease: 'back.out(1.8)' }
+          {
+            rotationY: direction > 0 ? 22 : -22,
+            scale: 0.82,
+            opacity: 0,
+            y: direction > 0 ? 24 : -24,
+          },
+          {
+            rotationY: 0,
+            scale: 1,
+            opacity: 1,
+            y: 0,
+            duration: 0.45,
+            ease: 'back.out(1.9)',
+          }
         );
       },
     });

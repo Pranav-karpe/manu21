@@ -183,10 +183,36 @@ body.stage-3-active #heart-field {
   text-align: center;
 }
 
+.magic-transition-veil::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 140%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(244, 114, 182, 0.5), #ffffff, rgba(192, 132, 252, 0.8), transparent);
+  box-shadow: 0 0 25px 6px rgba(244, 114, 182, 0.7), 0 0 50px 12px rgba(192, 132, 252, 0.5);
+  transform: translateY(-50%) scaleX(0);
+  opacity: 0;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+  pointer-events: none;
+}
+
 .magic-transition-veil.veil-active {
   opacity: 1;
   pointer-events: auto;
   transform: scale(1);
+}
+
+.magic-transition-veil.veil-active::before {
+  transform: translateY(-50%) scaleX(1);
+  opacity: 0.85;
+  animation: anamorphicPulse 2.8s ease-in-out infinite alternate;
+}
+
+@keyframes anamorphicPulse {
+  0% { opacity: 0.65; transform: translateY(-50%) scaleY(0.8); }
+  100% { opacity: 0.95; transform: translateY(-50%) scaleY(1.4); }
 }
 
 .veil-heart-burst {
@@ -809,6 +835,7 @@ body.stage-3-active #heart-field {
   justify-content: center;
   width: 100%;
   margin-bottom: 1.2rem;
+  perspective: 1200px;
 }
 
 .wish-active-card {
@@ -1286,22 +1313,27 @@ body.stage-3-active #heart-field {
 .letter-sign-block {
   text-align: right;
   border-top: 1px solid rgba(216, 180, 254, 0.25);
-  padding-top: 0.85rem;
-  margin-top: 1.6rem;
-  margin-bottom: 1.2rem;
+  padding-top: 1.1rem;
+  margin-top: 1.8rem;
+  margin-bottom: 1.4rem;
 }
 
 .sign-valediction {
-  font-size: 0.86rem;
+  font-size: 0.95rem;
   font-style: italic;
-  color: var(--purple-light);
+  color: var(--pink-rose);
+  margin-bottom: 1.25rem; /* Generous gap so 'Forever with you,' never collides with cursive ascenders */
+  display: block;
 }
 
 .sign-pranav-name {
   font-family: var(--font-hero);
   font-size: clamp(2.2rem, 4.8vw, 2.9rem);
   color: var(--pure-white);
-  line-height: 1;
+  line-height: 1.4;
+  display: block;
+  margin-top: 0.5rem;
+  padding-top: 0.2rem;
 }
 
 .letter-actions-row {
